@@ -1,6 +1,11 @@
+import time
 import random
 import datetime
 from USBIP import BaseStucture, USBDevice, InterfaceDescriptor, DeviceConfigurations, EndPoint, USBContainer
+
+
+#data event counter    
+count =0
 
 # Emulating USB mouse
 
@@ -34,7 +39,7 @@ interface_d = InterfaceDescriptor(bAlternateSetting=0,
 
 end_point = EndPoint(bEndpointAddress=0x81,
                      bmAttributes=0x3,
-                     wMaxPacketSize=8000,  # Little endian
+                     wMaxPacketSize=0x0800,  # Little endian
                      bInterval=0xFF)  # interval to report
 
 
@@ -102,12 +107,24 @@ class USBHID(USBDevice):
             return_val+=chr(val)
         return return_val
 
+    def comp(self,val):
+        if val >= 0: 
+          return val
+        else:
+          return 256+val
+
+
+
     def handle_data(self, usb_req):
         # Sending random mouse data
         # Send data only for 5 seconds
-        if (datetime.datetime.now() - self.start_time).seconds < 5:
-            return_val = chr(0x0) + chr(random.randint(1, 10)) + chr(random.randint(1, 10)) + chr(random.randint(1, 10))
-            self.send_usb_req(usb_req, return_val)
+        #if (datetime.datetime.now() - self.start_time).seconds < 10:
+         global count
+         if count < 100:
+            return_val = chr(0x0) + chr(self.comp(random.randint(-5, 5))) + chr(self.comp(random.randint(-5, 5))) + chr(0)
+            self.send_usb_req(usb_req, return_val, len(return_val))
+            time.sleep(0.05)
+         count=count+1
 
 
     def handle_unknown_control(self, control_req, usb_req):
@@ -115,12 +132,15 @@ class USBHID(USBDevice):
             if control_req.bRequest == 0x6:  # Get Descriptor
                 if control_req.wValue == 0x22:  # send initial report
                     print 'send initial report'
-                    self.send_usb_req(usb_req, self.generate_mouse_report())
+                    ret=self.generate_mouse_report()
+                    self.send_usb_req(usb_req, ret, len(ret))
 
         if control_req.bmRequestType == 0x21:  # Host Request
             if control_req.bRequest == 0x0a:  # set idle
                 print 'Idle'
                 # Idle
+                #self.send_ok(usb_req)
+                self.send_usb_req(usb_req,'',0,0);
                 pass
 
 

@@ -1,5 +1,20 @@
-USB Emulation In Python With No Additional Hardware
+USBIP hardware emulation (Virtual USB device) 
 =============
+
+Hack fixes for mouse hid work with Linux 4.2 (and Windows 10)
+
+keyboard hid added.
+
+in Linux use:<br>
+  python hid-xxxx.py for python version<br>
+or<br>
+  ./hid-xxxx for c version<br>
+and<br>
+  usbip attach -r 127.0.0.1 -b 1-1<br>
+  (remember to load kernel modules usbip-core and vhci-hcd)<br>   
+
+for list device use:<br>
+  usbip list -r 127.0.0.1 
 
 More details on: <br>
 http://breaking-the-system.blogspot.com/2014/08/emulating-usb-devices-in-python-with-no.html <br>
